@@ -2,7 +2,7 @@
 
 #include <QImageWriter>
 #include <QMenu>
-#include <QTemporaryFile>
+#include <QBuffer>
 #include <QWidget>
 
 #undef slots
