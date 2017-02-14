@@ -5,7 +5,7 @@ SetCompressor /SOLID lzma
 
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
-!define VERSION 0.3.0
+!define VERSION 2.0.0.99
 !define COMPANY "NovaCoin project"
 !define URL http://www.novacoin.ru/
 
