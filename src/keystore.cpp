@@ -142,7 +142,6 @@ bool CCryptoKeyStore::AddKey(const CKey& key)
     return true;
 }
 
-
 bool CCryptoKeyStore::AddCryptedKey(const CPubKey &vchPubKey, const std::vector<unsigned char> &vchCryptedSecret)
 {
     {

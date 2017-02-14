@@ -26,5 +26,4 @@ public:
     static MacNotificationHandler *instance();
 };
 
-
 #endif // BITCOIN_QT_MACNOTIFICATIONHANDLER_H

@@ -1001,7 +1001,7 @@ int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees)
 
     if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfStakeReward(): create=%s nCoinAge=%"PRId64"\n", FormatMoney(nSubsidy).c_str(), nCoinAge);
-    
+
     return nSubsidy + nFees;
 }
 
@@ -1056,7 +1056,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64_t nTime)
 unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfStake)
 {
 
-	CBigNum bnTargetLimit = fProofOfStake ? bnProofOfStakeLimit : bnProofOfWorkLimit;
+    CBigNum bnTargetLimit = fProofOfStake ? bnProofOfStakeLimit : bnProofOfWorkLimit;
 
     if (pindexLast == NULL)
         return bnTargetLimit.GetCompact(); // genesis block
@@ -2094,7 +2094,6 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
     if (fCheckMerkleRoot && hashMerkleRoot != BuildMerkleTree())
         return DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"));
 
-
     return true;
 }
 
@@ -2523,7 +2522,6 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nBits    = bnProofOfWorkLimit.GetCompact();
         block.nNonce   = !fTestNet ? 813120 : 813120;
 
-
 // GEN ->
 
         if (false  && (block.GetHash() != hashGenesisBlock)) {
@@ -2552,7 +2550,7 @@ bool LoadBlockIndex(bool fAllowNew)
         assert(block.hashMerkleRoot == uint256("0x8e17c4a32d055ed732ccde3ff4df5a29f49e6259ad3696b5af4cd3148168533f"));
 
 
-	    block.print();
+        block.print();
         assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
         assert(block.CheckBlock());
 
@@ -2586,7 +2584,6 @@ bool LoadBlockIndex(bool fAllowNew)
 
     return true;
 }
-
 
 
 void PrintBlockTree()
@@ -2836,6 +2833,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         return true;
     }
 
+
     if (strCommand == "version")
     {
         // Each connection can only send one version message
@@ -3041,6 +3039,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
             pfrom->fDisconnect = true;
     }
 
+
     else if (strCommand == "inv")
     {
         vector<CInv> vInv;
@@ -3200,6 +3199,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
             }
         }
     }
+
+
     else if (strCommand == "checkpoint")
     {
         CSyncCheckpoint checkpoint;
@@ -3214,6 +3215,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
                 checkpoint.RelayTo(pnode);
         }
     }
+
 
     else if (strCommand == "getheaders")
     {

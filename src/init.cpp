@@ -22,7 +22,6 @@
 #include <signal.h>
 #endif
 
-
 using namespace std;
 using namespace boost;
 
@@ -82,7 +81,7 @@ void Shutdown(void* parg)
     {
         fShutdown = true;
         nTransactionsUpdated++;
-//        CTxDB().Close();
+        // CTxDB().Close();
         bitdb.Flush(false);
         StopNode();
         bitdb.Flush(true);

@@ -132,29 +132,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     // Create status bar
 
-	
     // Status bar notification icons
-	
-	
-	
-	
-	
-	
     labelEncryptionIcon = new QLabel();
     labelStakingIcon = new QLabel();
     labelConnectionsIcon = new QLabel();
     labelBlocksIcon = new QLabel();
 
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
     if (GetBoolArg("-staking", true))
     {
         QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
@@ -168,7 +151,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     progressBarLabel->setVisible(false);
     progressBar = new QProgressBar();
 
-
     addToolBarBreak(Qt::LeftToolBarArea);
     QToolBar *toolbar2 = addToolBar(tr("Tabs toolbar"));
     addToolBar(Qt::LeftToolBarArea,toolbar2);
@@ -177,11 +159,11 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     toolbar2->setObjectName("toolbar2");
     toolbar2->setFixedWidth(28);
     toolbar2->setIconSize(QSize(28,54));
-	toolbar2->addWidget(labelEncryptionIcon);
-	toolbar2->addWidget(labelStakingIcon);
+    toolbar2->addWidget(labelEncryptionIcon);
+    toolbar2->addWidget(labelStakingIcon);
     toolbar2->addWidget(labelConnectionsIcon);
     toolbar2->addWidget(labelBlocksIcon);
-	toolbar2->setStyleSheet("#toolbar2 QToolButton { background: transparent;border:none;padding:0px;margin:0px;height:54px;width:28px; }");
+    toolbar2->setStyleSheet("#toolbar2 QToolButton { background: transparent;border:none;padding:0px;margin:0px;height:54px;width:28px; }");
     syncIconMovie = new QMovie(":/movies/update_spinner", "mng", this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
@@ -344,7 +326,6 @@ void BitcoinGUI::createMenuBar()
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
 }
-
 
 void BitcoinGUI::createToolBars()
 {

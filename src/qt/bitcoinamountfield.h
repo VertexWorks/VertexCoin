@@ -56,5 +56,4 @@ private slots:
 
 };
 
-
 #endif // BITCOINFIELD_H

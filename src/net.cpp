@@ -418,20 +418,10 @@ void ThreadGetMyExternalIP(void* parg)
     }
 }
 
-
-
-
-
 void AddressCurrentlyConnected(const CService& addr)
 {
     addrman.Connected(addr);
 }
-
-
-
-
-
-
 
 CNode* FindNode(const CNetAddr& ip)
 {
@@ -478,7 +468,6 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest)
             return pnode;
         }
     }
-
 
     /// debug print
     printf("trying connection %s lastseen=%.1fhrs\n",
@@ -542,7 +531,6 @@ void CNode::Cleanup()
 {
 }
 
-
 void CNode::PushVersion()
 {
     /// when NTP implemented, change to just nTime = GetAdjustedTime()
@@ -554,10 +542,6 @@ void CNode::PushVersion()
     PushMessage("version", PROTOCOL_VERSION, nLocalServices, nTime, addrYou, addrMe,
                 nLocalHostNonce, FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, std::vector<string>()), nBestHeight);
 }
-
-
-
-
 
 std::map<CNetAddr, int64_t> CNode::setBanned;
 CCriticalSection CNode::cs_setBanned;
@@ -696,14 +680,6 @@ int CNetMessage::readData(const char *pch, unsigned int nBytes)
 
     return nCopy;
 }
-
-
-
-
-
-
-
-
 
 // requires LOCK(cs_vSend)
 void SocketSendData(CNode *pnode)
@@ -844,7 +820,6 @@ void ThreadSocketHandler2(void* parg)
             uiInterface.NotifyNumConnectionsChanged(vNodes.size());
         }
 
-
         //
         // Find which sockets have data to receive
         //
@@ -908,7 +883,6 @@ void ThreadSocketHandler2(void* parg)
             MilliSleep(timeout.tv_usec/1000);
         }
 
-
         //
         // Accept new connections
         //
@@ -958,7 +932,6 @@ void ThreadSocketHandler2(void* parg)
                 }
             }
         }
-
 
         //
         // Service each socket
@@ -1067,13 +1040,6 @@ void ThreadSocketHandler2(void* parg)
         MilliSleep(10);
     }
 }
-
-
-
-
-
-
-
 
 
 #ifdef USE_UPNP
@@ -1223,13 +1189,6 @@ void MapPort()
 #endif
 
 
-
-
-
-
-
-
-
 // DNS seeds
 // Each pair gives a source name and a seed name.
 // The first name is used as information source for addrman.
@@ -1292,16 +1251,6 @@ void ThreadDNSAddressSeed2(void* parg)
 
     printf("%d addresses found from DNS seeds\n", found);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 unsigned int pnSeed[] =
@@ -1443,7 +1392,6 @@ void ThreadOpenConnections2(void* parg)
         vnThreadsRunning[THREAD_OPENCONNECTIONS]++;
         if (fShutdown)
             return;
-
 
         vnThreadsRunning[THREAD_OPENCONNECTIONS]--;
         CSemaphoreGrant grant(*semOutbound);
@@ -1654,12 +1602,6 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
 }
 
 
-
-
-
-
-
-
 void ThreadMessageHandler(void* parg)
 {
     // Make this thread recognisable as the message handling thread
@@ -1742,10 +1684,6 @@ void ThreadMessageHandler2(void* parg)
             return;
     }
 }
-
-
-
-
 
 
 bool BindListenPort(const CService &addrBind, string& strError)
