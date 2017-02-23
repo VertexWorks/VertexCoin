@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = Vertex-qt
-VERSION = 2.0.0.99
+VERSION = 2.0.0
 INCLUDEPATH += src src/json src/qt
 QT += network printsupport
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
