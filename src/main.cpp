@@ -994,14 +994,14 @@ int64_t GetProofOfWorkReward(int64_t nFees)
 }
 
 // miner's coin stake reward
-int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees)
+int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees, int64_t nTime)
 {
-    int64_t nSubsidy = nCoinAge * COIN_YEAR_REWARD * 25 / (365 * 25 + 8);
+    int64_t nSubsidy = nCoinAge * (nTime > FORK_TIME ? COIN_YEAR_REWARD_FORK : COIN_YEAR_REWARD) * 25 / (365 * 25 + 8);
 
 
     if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfStakeReward(): create=%s nCoinAge=%"PRId64"\n", FormatMoney(nSubsidy).c_str(), nCoinAge);
-    
+
     return nSubsidy + nFees;
 }
 
@@ -1056,7 +1056,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64_t nTime)
 unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfStake)
 {
 
-	CBigNum bnTargetLimit = fProofOfStake ? bnProofOfStakeLimit : bnProofOfWorkLimit;
+    CBigNum bnTargetLimit = fProofOfStake ? bnProofOfStakeLimit : bnProofOfWorkLimit;
 
     if (pindexLast == NULL)
         return bnTargetLimit.GetCompact(); // genesis block
@@ -1588,7 +1588,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
         if (!vtx[1].GetCoinAge(txdb, nCoinAge))
             return error("ConnectBlock() : %s unable to get coin age for coinstake", vtx[1].GetHash().ToString().substr(0,10).c_str());
 
-        int64_t nCalculatedStakeReward = GetProofOfStakeReward(nCoinAge, nFees);
+        int64_t nCalculatedStakeReward = GetProofOfStakeReward(nCoinAge, nFees, GetBlockTime());
 
         if (nStakeReward > nCalculatedStakeReward)
             return DoS(100, error("ConnectBlock() : coinstake pays too much(actual=%"PRId64" vs calculated=%"PRId64")", nStakeReward, nCalculatedStakeReward));
@@ -2094,7 +2094,6 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
     if (fCheckMerkleRoot && hashMerkleRoot != BuildMerkleTree())
         return DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"));
 
-
     return true;
 }
 
@@ -2523,7 +2522,6 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nBits    = bnProofOfWorkLimit.GetCompact();
         block.nNonce   = !fTestNet ? 813120 : 813120;
 
-
 // GEN ->
 
         if (false  && (block.GetHash() != hashGenesisBlock)) {
@@ -2552,7 +2550,7 @@ bool LoadBlockIndex(bool fAllowNew)
         assert(block.hashMerkleRoot == uint256("0x8e17c4a32d055ed732ccde3ff4df5a29f49e6259ad3696b5af4cd3148168533f"));
 
 
-	    block.print();
+        block.print();
         assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
         assert(block.CheckBlock());
 
@@ -2586,7 +2584,6 @@ bool LoadBlockIndex(bool fAllowNew)
 
     return true;
 }
-
 
 
 void PrintBlockTree()
@@ -2740,6 +2737,9 @@ string GetWarnings(string strFor)
     if (GetBoolArg("-testsafemode"))
         strRPC = "test";
 
+    if (!CLIENT_VERSION_IS_RELEASE)
+        strStatusBar = _("This is a pre-release test build - use at your own risk - do not use for mining/minting or merchant applications");
+
     // Misc warnings like out of disk space and clock is wrong
     if (strMiscWarning != "")
     {
@@ -2833,6 +2833,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         return true;
     }
 
+
     if (strCommand == "version")
     {
         // Each connection can only send one version message
@@ -2847,7 +2848,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         CAddress addrFrom;
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
-        if (pfrom->nVersion < MIN_PEER_PROTO_VERSION)
+        if (pfrom->nVersion < (GetAdjustedTime() > FORK_TIME ? MIN_PEER_PROTO_VERSION_FORK : MIN_PEER_PROTO_VERSION))
         {
             // disconnect from peers older than this proto version
             printf("partner %s using obsolete version %i; disconnecting\n", pfrom->addr.ToString().c_str(), pfrom->nVersion);
@@ -2924,8 +2925,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         static int nAskedForBlocks = 0;
         if (!pfrom->fClient && !pfrom->fOneShot &&
             (pfrom->nStartingHeight > (nBestHeight - 144)) &&
-            (pfrom->nVersion < NOBLKS_VERSION_START ||
-             pfrom->nVersion >= NOBLKS_VERSION_END) &&
+            (pfrom->nVersion < NOBLKS_VERSION_START || pfrom->nVersion > (GetAdjustedTime() > FORK_TIME ? NOBLKS_VERSION_END_FORK : NOBLKS_VERSION_END)) &&
              (nAskedForBlocks < 1 || vNodes.size() <= 1))
         {
             nAskedForBlocks++;
@@ -3037,6 +3037,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
         if (pfrom->fOneShot)
             pfrom->fDisconnect = true;
     }
+
 
     else if (strCommand == "inv")
     {
@@ -3197,6 +3198,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
             }
         }
     }
+
+
     else if (strCommand == "checkpoint")
     {
         CSyncCheckpoint checkpoint;
@@ -3211,6 +3214,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
                 checkpoint.RelayTo(pnode);
         }
     }
+
 
     else if (strCommand == "getheaders")
     {

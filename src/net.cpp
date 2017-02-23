@@ -3,7 +3,6 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "irc.h"
 #include "db.h"
 #include "net.h"
 #include "init.h"
@@ -346,7 +345,7 @@ bool GetMyExternalIP2(const CService& addrConnect, const char* pszGet, const cha
     return error("GetMyExternalIP() : connection closed");
 }
 
-// We now get our external IP from the IRC server first and only use this as a backup
+// Fetch our public IP address
 bool GetMyExternalIP(CNetAddr& ipRet)
 {
     CService addrConnect;
@@ -419,20 +418,10 @@ void ThreadGetMyExternalIP(void* parg)
     }
 }
 
-
-
-
-
 void AddressCurrentlyConnected(const CService& addr)
 {
     addrman.Connected(addr);
 }
-
-
-
-
-
-
 
 CNode* FindNode(const CNetAddr& ip)
 {
@@ -479,7 +468,6 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest)
             return pnode;
         }
     }
-
 
     /// debug print
     printf("trying connection %s lastseen=%.1fhrs\n",
@@ -543,7 +531,6 @@ void CNode::Cleanup()
 {
 }
 
-
 void CNode::PushVersion()
 {
     /// when NTP implemented, change to just nTime = GetAdjustedTime()
@@ -555,10 +542,6 @@ void CNode::PushVersion()
     PushMessage("version", PROTOCOL_VERSION, nLocalServices, nTime, addrYou, addrMe,
                 nLocalHostNonce, FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, std::vector<string>()), nBestHeight);
 }
-
-
-
-
 
 std::map<CNetAddr, int64_t> CNode::setBanned;
 CCriticalSection CNode::cs_setBanned;
@@ -697,14 +680,6 @@ int CNetMessage::readData(const char *pch, unsigned int nBytes)
 
     return nCopy;
 }
-
-
-
-
-
-
-
-
 
 // requires LOCK(cs_vSend)
 void SocketSendData(CNode *pnode)
@@ -845,7 +820,6 @@ void ThreadSocketHandler2(void* parg)
             uiInterface.NotifyNumConnectionsChanged(vNodes.size());
         }
 
-
         //
         // Find which sockets have data to receive
         //
@@ -909,7 +883,6 @@ void ThreadSocketHandler2(void* parg)
             MilliSleep(timeout.tv_usec/1000);
         }
 
-
         //
         // Accept new connections
         //
@@ -959,7 +932,6 @@ void ThreadSocketHandler2(void* parg)
                 }
             }
         }
-
 
         //
         // Service each socket
@@ -1070,13 +1042,6 @@ void ThreadSocketHandler2(void* parg)
 }
 
 
-
-
-
-
-
-
-
 #ifdef USE_UPNP
 void ThreadMapPort(void* parg)
 {
@@ -1112,10 +1077,14 @@ void ThreadMapPort2(void* parg)
 #ifndef UPNPDISCOVER_SUCCESS
     /* miniupnpc 1.5 */
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
-#else
+#elif MINIUPNPC_API_VERSION < 14
     /* miniupnpc 1.6 */
     int error = 0;
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+#else
+    /* miniupnpc 1.9+ */
+    int error = 0;
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
 #endif
 
     struct UPNPUrls urls;
@@ -1220,19 +1189,12 @@ void MapPort()
 #endif
 
 
-
-
-
-
-
-
-
 // DNS seeds
 // Each pair gives a source name and a seed name.
 // The first name is used as information source for addrman.
 // The second name should resolve to a list of seed addresses.
 static const char *strDNSSeed[][2] = {
-    {"104.207.144.68", "104.207.144.68"},
+    {"vtx.seed.fuzzbawls.pw", "vtx.seed.fuzzbawls.pw"},
 };
 
 void ThreadDNSAddressSeed(void* parg)
@@ -1291,26 +1253,9 @@ void ThreadDNSAddressSeed2(void* parg)
 }
 
 
-
-
-
-
-
-
-
-
-
-
 unsigned int pnSeed[] =
 {
-    0xdf4bd379, 0x7934d29b, 0x26bc02ad, 0x7ab743ad, 0x0ab3a7bc,
-    0x375ab5bc, 0xc90b1617, 0x5352fd17, 0x5efc6c18, 0xccdc7d18,
-    0x443d9118, 0x84031b18, 0x347c1e18, 0x86512418, 0xfcfe9031,
-    0xdb5eb936, 0xef8d2e3a, 0xcf51f23c, 0x18ab663e, 0x36e0df40,
-    0xde48b641, 0xad3e4e41, 0xd0f32b44, 0x09733b44, 0x6a51f545,
-    0xe593ef48, 0xc5f5ef48, 0x96f4f148, 0xd354d34a, 0x36206f4c,
-    0xceefe953, 0x50468c55, 0x89d38d55, 0x65e61a5a, 0x16b1b95d,
-    0x702b135e, 0x0f57245e, 0xdaab5f5f, 0xba15ef63,
+    0x11eeb05e, 0x5388bd05, 0x016618d4,
 };
 
 void DumpAddresses()
@@ -1448,14 +1393,13 @@ void ThreadOpenConnections2(void* parg)
         if (fShutdown)
             return;
 
-
         vnThreadsRunning[THREAD_OPENCONNECTIONS]--;
         CSemaphoreGrant grant(*semOutbound);
         vnThreadsRunning[THREAD_OPENCONNECTIONS]++;
         if (fShutdown)
             return;
 
-        // Add seed nodes if IRC isn't working
+        // Add seed nodes if DNS isn't working
         if (addrman.size()==0 && (GetTime() - nStart > 60) && !fTestNet)
         {
             std::vector<CAddress> vAdd;
@@ -1658,12 +1602,6 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
 }
 
 
-
-
-
-
-
-
 void ThreadMessageHandler(void* parg)
 {
     // Make this thread recognisable as the message handling thread
@@ -1746,10 +1684,6 @@ void ThreadMessageHandler2(void* parg)
             return;
     }
 }
-
-
-
-
 
 
 bool BindListenPort(const CService &addrBind, string& strError)
@@ -1940,10 +1874,6 @@ void StartNode(void* parg)
     // Map ports with UPnP
     if (fUseUPnP)
         MapPort();
-
-    // Get addresses from IRC and advertise ours
-    if (!NewThread(ThreadIRCSeed, NULL))
-        printf("Error: NewThread(ThreadIRCSeed) failed\n");
 
     // Send and receive from sockets, accept connections
     if (!NewThread(ThreadSocketHandler, NULL))

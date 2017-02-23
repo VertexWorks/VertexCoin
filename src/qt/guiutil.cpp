@@ -168,9 +168,9 @@ void copyEntryData(QAbstractItemView *view, int column, int role)
 }
 
 QString getSaveFileName(QWidget *parent, const QString &caption,
-                                 const QString &dir,
-                                 const QString &filter,
-                                 QString *selectedSuffixOut)
+                       const QString &dir,
+                       const QString &filter,
+                       QString *selectedSuffixOut)
 {
     QString selectedFilter;
     QString myDir;
@@ -459,4 +459,3 @@ void HelpMessageBox::showOrPrint()
 }
 
 } // namespace GUIUtil
-

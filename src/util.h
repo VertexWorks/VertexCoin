@@ -645,4 +645,3 @@ inline uint32_t ByteReverse(uint32_t value)
 }
 
 #endif
-
